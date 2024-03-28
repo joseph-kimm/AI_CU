@@ -1,4 +1,4 @@
-#### Things to run before to set up environment
+### Things to run before to set up environment
 
 Install necessary libraries 
 ```
