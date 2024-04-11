@@ -11,39 +11,37 @@ def show_alert():
     tk.messagebox.showwarning("Face Not Detected", "Face not detected for more than 5 seconds!")
     root.destroy()  # Destroy the tkinter window after showing the alert
 
+def draw_landmarks(frame, landmarks):
+    for landmark_type in landmarks:
+        for point in landmarks[landmark_type]:
+            cv2.circle(frame, point, 2, (0, 0, 255), -1)
+
 def init():
-    capCam = cv2.VideoCapture(0)
-    capVid = cv2.VideoCapture('nba.mp4')
+    cap = cv2.VideoCapture(0)
 
-    if not capCam.isOpened() or not capVid.isOpened():
-        print("Error: Could not open video.")
-        exit()
-
-    # Create separate windows for displaying frames
-    cv2.namedWindow('Video 1')
-    cv2.namedWindow('Video 2')
-
-    duration_gone = 0 # Timer to track how long the face is not detected
+    duration_gone = 0  # Timer to track how long the face is not detected
     alert_displayed = False  # Flag to track if alert message is displayed
     gone_time = -1
 
     while True:
-        # Capture frame-by-frame
-        retCam, frameCam = capCam.read()
-        retVid, frameVid = capVid.read()
+        start_time = time.time()  # Start time of the loop iteration
 
-        rgb_frame = frameCam[:, :, ::-1]
+        # Capture frame-by-frame
+        ret, frame = cap.read()
+
+        rgb_frame = frame[:, :, ::-1]
         # Find all the faces in the current frame of video
         face_locations = face_recognition.face_locations(rgb_frame)
+        face_landmarks = face_recognition.face_landmarks(rgb_frame)
 
-        if face_locations:
+        if face_locations or alert_displayed:
             # Reset the timer if face is detected
             duration_gone = 0
             gone_time = -1
             alert_displayed = False
-            for top, right, bottom, left in face_locations:
-                # Draw a box around the face
-                cv2.rectangle(frameCam, (left, top), (right, bottom), (0, 0, 255), 2)
+
+            for landmarks in face_landmarks:
+                draw_landmarks(frame, landmarks)
         else:
             # Increment the timer if face is not detected
             if duration_gone == 0:
@@ -51,8 +49,7 @@ def init():
             duration_gone += 1
 
         # Display the resulting image
-        cv2.imshow('Video 1', frameCam)
-        cv2.imshow('Video 2', frameVid)
+        cv2.imshow('Video', frame)
 
         elapsed_time = 0
         if gone_time >= 0:
@@ -67,8 +64,14 @@ def init():
         if cv2.waitKey(25) == 13:
             break
 
-    capCam.release()
-    capVid.release()
+        # Calculate the time taken for the loop iteration
+        iteration_time = time.time() - start_time
+
+        # Introduce a delay to control frame rate
+        if iteration_time < 0.04:  # Adjust the value as needed for desired frame rate
+            time.sleep(0.04 - iteration_time)
+
+    cap.release()
     cv2.destroyAllWindows()
 
 init()
