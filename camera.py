@@ -3,13 +3,17 @@ import face_recognition
 import time
 import tkinter as tk
 from tkinter import messagebox
+import pyautogui
 
 def show_alert():
-    root = tk.Tk()
+    root = tk.Tk() 
     root.attributes("-topmost", True)  # Ensure the alert window is on top
     root.withdraw()  # Hide the tkinter window
-    tk.messagebox.showwarning("Face Not Detected", "Face not detected for more than 5 seconds!")
+    tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
     root.destroy()  # Destroy the tkinter window after showing the alert
+
+    # Freeze the screen
+    pyautogui.press('space')
 
 def draw_landmarks(frame, landmarks):
     for landmark_type in landmarks:
