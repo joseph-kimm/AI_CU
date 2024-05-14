@@ -4,12 +4,17 @@ import time
 import tkinter as tk
 from tkinter import messagebox
 import pyautogui
+from scipy.spatial import distance
 
-def show_alert():
+
+def show_alert(type):
     root = tk.Tk() 
     root.attributes("-topmost", True)  # Ensure the alert window is on top
     root.withdraw()  # Hide the tkinter window
-    tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
+    if type == 'face':
+        tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
+    elif type == 'eye':
+        tk.messagebox.showwarning("Blink Not Detected ", "Blink not detected for more than 5 seconds!")
     root.destroy()  # Destroy the tkinter window after showing the alert
 
     # Freeze the screen
@@ -20,12 +25,42 @@ def draw_landmarks(frame, landmarks):
         for point in landmarks[landmark_type]:
             cv2.circle(frame, point, 2, (0, 0, 255), -1)
 
+def detect_blink(landmarks):
+    # Assuming left eye landmarks are at index 0 and right eye landmarks are at index 1
+    left_eye = landmarks['left_eye']
+    right_eye = landmarks['right_eye']
+
+    # Calculate the aspect ratio of the eyes
+    left_eye_aspect_ratio = eye_aspect_ratio(left_eye)
+    right_eye_aspect_ratio = eye_aspect_ratio(right_eye)
+
+    # Average the aspect ratios of both eyes
+    avg_eye_aspect_ratio = (left_eye_aspect_ratio + right_eye_aspect_ratio) / 2.0
+
+    return avg_eye_aspect_ratio
+
+def eye_aspect_ratio(eye):
+    # Compute the euclidean distances between the two sets of vertical eye landmarks
+    a = distance.euclidean(eye[1], eye[5])
+    b = distance.euclidean(eye[2], eye[4])
+
+    # Compute the euclidean distance between the horizontal eye landmarks
+    c = distance.euclidean(eye[0], eye[3])
+
+    # Compute the eye aspect ratio
+    ear = (a + b) / (2.0 * c)
+    return ear
+
 def init():
     cap = cv2.VideoCapture(0)
 
     duration_gone = 0  # Timer to track how long the face is not detected
     alert_displayed = False  # Flag to track if alert message is displayed
-    gone_time = -1
+    face_gone_time = -1
+    closed_time = -1
+    opened_time = -1
+    closed_eyes_duration = 0
+    open_eyes_duration = 0
 
     while True:
         start_time = time.time()  # Start time of the loop iteration
@@ -41,28 +76,74 @@ def init():
         if face_locations or alert_displayed:
             # Reset the timer if face is detected
             duration_gone = 0
-            gone_time = -1
+            face_gone_time = -1
             alert_displayed = False
 
             for landmarks in face_landmarks:
                 draw_landmarks(frame, landmarks)
+
+                ear = detect_blink(landmarks)
+                
+                if ear < 0.2:  # Assuming 0.2 as the threshold for blink detection
+                    # Increment the closed eyes timer
+                    if closed_eyes_duration == 0:
+                        closed_time = time.time()
+                    closed_eyes_duration += 1
+                    # Reset the open eyes timer
+                    open_eyes_duration = 0
+                    opened_time = -1
+                else:
+                    # Reset the closed eyes timer
+                    if open_eyes_duration == 0:
+                        opened_time = time.time()
+                    closed_eyes_duration = 0
+                    closed_time = -1
+                    # Increment the open eyes timer
+                    open_eyes_duration += 1
         else:
             # Increment the timer if face is not detected
             if duration_gone == 0:
-                gone_time = time.time()
+                face_gone_time = time.time()
             duration_gone += 1
+            # print("face ", face_gone_time, /" sigh ", duration_gone)
 
         # Display the resulting image
         cv2.imshow('Video', frame)
 
-        elapsed_time = 0
-        if gone_time >= 0:
-            elapsed_time = time.time() - gone_time
+        curr_time = time.time()
+        face_elapsed_time = 0
+        close_elapsed_time = 0
+        open_elapsed_time = 0
+
+        if face_gone_time >= 0:
+            face_elapsed_time = curr_time - face_gone_time
+        elif closed_time >= 0:
+            close_elapsed_time = curr_time - closed_time
+        elif opened_time >= 0:
+            open_elapsed_time = curr_time - opened_time
 
         # Display alert message if face is not detected for more than 5 seconds
-        if elapsed_time >= 5 and not alert_displayed:
-            show_alert()
-            alert_displayed = True
+        if not alert_displayed:
+
+            if face_elapsed_time >= 5:
+                show_alert('face')
+                alert_displayed = True
+            if face_locations:
+                if open_eyes_duration == 0 and close_elapsed_time >= 5:
+                    show_alert('eye')
+                    alert_displayed = True
+                    closed_time = -1
+                    opened_time = -1
+                    closed_eyes_duration = 0
+                    open_eyes_duration = 0
+                elif closed_eyes_duration == 0 and open_elapsed_time >= 10:
+                    show_alert('eye')
+                    alert_displayed = True
+                    closed_time = -1
+                    opened_time = -1
+                    closed_eyes_duration = 0
+                    open_eyes_duration = 0
+
 
         # press Enter to exit
         if cv2.waitKey(25) == 13:
