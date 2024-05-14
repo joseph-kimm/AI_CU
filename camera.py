@@ -4,6 +4,7 @@ import time
 import tkinter as tk
 from tkinter import messagebox
 import pyautogui
+import vlc
 
 def show_alert():
     root = tk.Tk() 
@@ -76,6 +77,7 @@ def init():
             time.sleep(0.04 - iteration_time)
 
     cap.release()
+    player.release()
     cv2.destroyAllWindows()
 
 init()
