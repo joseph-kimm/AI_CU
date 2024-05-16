@@ -7,6 +7,7 @@ from moviepy.editor import VideoFileClip
 import time
 import pygame
 from pyvidplayer2 import Video
+from pyvidplayer2 import VideoPlayer
 
 def playVideo1():
 
@@ -25,17 +26,16 @@ def playVideo1():
     clip.preview(fps= 60)  # This will start playing the vide
     pygame.quit()
 
-
+# function to play video
 def playVideo2():
 
-    # create video object
-
+    # name of video to play
     vid = Video("nba.mp4")
 
     win = pygame.display.set_mode(vid.current_size)
     pygame.display.set_caption(vid.name)
 
-
+    # while the video is being played
     while vid.active:
         key = None
         for event in pygame.event.get():
@@ -66,14 +66,12 @@ def playVideo2():
             vid.set_speed(2.0)      #doubles video speed
 
         # only draw new frames, and only update the screen if something is drawn
-        
         if vid.draw(win, (0, 0), force_draw=False):
             pygame.display.update()
 
         pygame.time.wait(16) # around 60 fps
 
     # close video when done
-
     vid.close()
     pygame.quit()
 
