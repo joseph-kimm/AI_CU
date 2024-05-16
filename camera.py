@@ -1,13 +1,11 @@
+import tkinter as tk
 import cv2
 import face_recognition
 import time
-import tkinter as tk
-from tkinter import messagebox
 import pyautogui
 from scipy.spatial import distance
 import pygame
 from pyvidplayer2 import Video
-from pyvidplayer2 import VideoPlayer
 
 
 def show_alert(type):
@@ -21,7 +19,7 @@ def show_alert(type):
     root.destroy()  # Destroy the tkinter window after showing the alert
 
     # Freeze the screen
-    pyautogui.press('space')
+    #pyautogui.press('space')
 
 def draw_landmarks(frame, landmarks):
     for landmark_type in landmarks:
@@ -55,6 +53,7 @@ def eye_aspect_ratio(eye):
     return ear
 
 def init():
+    show_alert('face')
     cap = cv2.VideoCapture(0)
 
     duration_gone = 0  # Timer to track how long the face is not detected
@@ -111,7 +110,7 @@ def init():
         face_locations = face_recognition.face_locations(rgb_frame)
         face_landmarks = face_recognition.face_landmarks(rgb_frame)
 
-        if face_locations or alert_displayed:
+        if face_locations or alert_displayed or not vid.paused:
             # Reset the timer if face is detected
             duration_gone = 0
             face_gone_time = -1
@@ -143,7 +142,6 @@ def init():
             if duration_gone == 0:
                 face_gone_time = time.time()
             duration_gone += 1
-            # print("face ", face_gone_time, /" sigh ", duration_gone)
 
         curr_time = time.time()
         face_elapsed_time = 0
@@ -182,7 +180,6 @@ def init():
         if alert_displayed and not vid.paused:
             vid.toggle_pause
 
-
         # Display the resulting image
         cv2.imshow('Video', frame)
 
@@ -190,7 +187,7 @@ def init():
         if vid.draw(win, (0, 0), force_draw=False):
             pygame.display.update()
 
-        pygame.time.wait(16) # around 60 fps
+        pygame.time.wait(30) # around 60 fps
 
         """
         # Calculate the time taken for the loop iteration
@@ -201,7 +198,6 @@ def init():
             time.sleep(0.04 - iteration_time)
 
         """
-
         
 # I want to make it so that the video only counts the seconds if the video is playing
 # If the video is paused, it would reset the count for whatever reason and not count
