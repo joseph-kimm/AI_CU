@@ -1,4 +1,5 @@
 ### Things to run before to set up environment
+Need to have Python v3.11
 
 Install necessary libraries 
 ```
