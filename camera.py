@@ -115,7 +115,6 @@ def video_control(key):
     elif key == "left":
         vid.seek(-15)           #rewind 15 seconds in video
 
-
 def init():
 
     # getting face image from camera
@@ -123,7 +122,7 @@ def init():
 
     global face_gone_time, closed_time, opened_time, gone_duration, closed_eyes_duration, open_eyes_duration
 
-    # reset all the counters that we have
+    # reset all the counters that we havey
     reset_counter()
 
     # setting display for the educatinal video
@@ -169,12 +168,11 @@ def init():
                 for landmarks in face_landmarks:
 
                     # commented it out as we don't actually have to draw anything lol
-                    # draw_landmarks(frame, landmarks)
+                    draw_landmarks(frame, landmarks)
 
                     ear = detect_blink(landmarks)
                     
-                    if ear < 0.3:  # Assuming 0.2 as the threshold for blink detection
-                        
+                    if ear < 0.25:  # Assuming 0.2 as the threshold for blink detection
                         # Increment the closed eyes timer
                         if closed_eyes_duration == 0:
                             closed_time = time.time()
@@ -224,8 +222,8 @@ def init():
                     show_alert('eye', 5)
                     alert = True
 
-                elif closed_eyes_duration == 0 and open_elapsed_time >= 10:
-                    show_alert('eye', 10)
+                elif closed_eyes_duration == 0 and open_elapsed_time >= 20:
+                    show_alert('eye', 20)
                     alert = True
 
             # if alert has been shown, reset all counter
@@ -237,7 +235,7 @@ def init():
             reset_counter()
 
         # Display the resulting image
-        # cv2.imshow('Video', frame)
+        cv2.imshow('Video', frame)
 
         # only draw new frames, and only update the screen if something is drawn
         if vid.draw(win, (0, 0), force_draw=False):
