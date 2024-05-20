@@ -6,9 +6,16 @@ from scipy.spatial import distance
 import pygame
 from pyvidplayer2 import Video
 import platform
-from AppKit import NSApplication, NSAlert, NSWindow
+from tkinter import messagebox
 import WebCamVideo
 import imutils
+
+# Try importing AppKit for macOS functionality (if available)
+try:
+  if platform.system() == "Darwin":  # Check for macOS using platform module
+    from AppKit import NSApplication, NSAlert, NSWindow
+except ModuleNotFoundError:
+  pass
 
 # global vid
 vid = Video("txt.mp4")
@@ -162,7 +169,7 @@ def init():
                 for landmarks in face_landmarks:
 
                     # commented it out as we don't actually have to draw anything lol
-                    #draw_landmarks(frame, landmarks)
+                    # draw_landmarks(frame, landmarks)
 
                     ear = detect_blink(landmarks)
                     
@@ -230,7 +237,7 @@ def init():
             reset_counter()
 
         # Display the resulting image
-        #cv2.imshow('Video', frame)
+        # cv2.imshow('Video', frame)
 
         # only draw new frames, and only update the screen if something is drawn
         if vid.draw(win, (0, 0), force_draw=False):
