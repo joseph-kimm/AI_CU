@@ -2,41 +2,70 @@ import tkinter as tk
 import cv2
 import face_recognition
 import time
-import pyautogui
 from scipy.spatial import distance
 import pygame
 from pyvidplayer2 import Video
 import platform
 from AppKit import NSApplication, NSAlert, NSWindow
+import WebCamVideo
+import imutils
 
+# global vid
+vid = Video("txt.mp4")
+global face_gone_time, closed_time, opened_time, gone_duration, closed_eyes_duration, open_eyes_duration
 
-def show_alert(type):
+def reset_counter():
+    global face_gone_time, closed_time, opened_time, gone_duration, closed_eyes_duration, open_eyes_duration
+    face_gone_time = -1
+    closed_time = -1
+    opened_time = -1
+    gone_duration = 0  # Timer to track how long the face is not detected
+    closed_eyes_duration = 0 # Timer to track how long eyes are closed for
+    open_eyes_duration = 0 # Timer to track how long eyes are open for
+
+# showing alert
+def show_alert(type, blink):
+
     os_name = platform.system()
 
     # Check if the program is running on macOS
     if os_name == 'Darwin':
 
+        vid.toggle_pause()
+
         alert = NSAlert.alloc().init()
         alert.setMessageText_("Alert!")
-        alert.setInformativeText_("Face not detected for more than 5 seconds!")
+
+        if type == 'face':
+            alert.setInformativeText_("Face not detected for more than 5 seconds!")
+
+        elif type == 'eye':
+            alert.setInformativeText_("Blink not detected for more than " + str(blink) + " seconds!")
+        
         response = alert.runModal()
+        vid.toggle_pause()
 
     # Check if the program is running on Windows
     elif os_name == 'Windows':
-
         root = tk.Tk() 
         root.attributes("-topmost", True)  # Ensure the alert window is on top
         root.withdraw()  # Hide the tkinter window
+        vid.toggle_pause()
+        reset_counter()
         if type == 'face':
             tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
         elif type == 'eye':
-            tk.messagebox.showwarning("Blink Not Detected ", "Blink not detected for more than 5 seconds!")
+            tk.messagebox.showwarning("Blink Not Detected ", "Blink not detected for more than " + str(blink) + " seconds!")
+        vid.toggle_pause()
         root.destroy()  # Destroy the tkinter window after showing the alert
 
+
+# drawing points in face
 def draw_landmarks(frame, landmarks):
     for landmark_type in landmarks:
         for point in landmarks[landmark_type]:
             cv2.circle(frame, point, 2, (0, 0, 255), -1)
+
 
 def detect_blink(landmarks):
     # Assuming left eye landmarks are at index 0 and right eye landmarks are at index 1
@@ -64,25 +93,40 @@ def eye_aspect_ratio(eye):
     ear = (a + b) / (2.0 * c)
     return ear
 
+def video_control(key):
+    if key == "q":
+            vid.stop()
+    elif key == "r":
+        vid.restart()           #rewind video to beginning
+    elif key == "p":
+        vid.toggle_pause()      #pause/plays video
+        reset_counter()
+    elif key == "m":
+        vid.toggle_mute()       #mutes/unmutes video
+    elif key == "right":
+        vid.seek(15)            #skip 15 seconds in video
+    elif key == "left":
+        vid.seek(-15)           #rewind 15 seconds in video
+
+
 def init():
-    cap = cv2.VideoCapture(0)
 
-    duration_gone = 0  # Timer to track how long the face is not detected
-    alert_displayed = False  # Flag to track if alert message is displayed
-    face_gone_time = -1
-    closed_time = -1
-    opened_time = -1
-    closed_eyes_duration = 0
-    open_eyes_duration = 0
+    # getting face image from camera
+    cap = WebCamVideo.WebcamVideoStream(src=0).start()
 
-    # path of the video to be played
-    vid = Video("nba.mp4")
+    global face_gone_time, closed_time, opened_time, gone_duration, closed_eyes_duration, open_eyes_duration
 
+    # reset all the counters that we have
+    reset_counter()
+
+    # setting display for the educatinal video
     win = pygame.display.set_mode(vid.current_size)
     pygame.display.set_caption(vid.name)
 
+    # while there is a video
     while vid.active:
 
+        # detecting any keys taht are pressed
         key = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -90,99 +134,100 @@ def init():
             elif event.type == pygame.KEYDOWN:
                 key = pygame.key.name(event.key)
 
-        if key == "q":
-            vid.stop()
-        if key == "r":
-            vid.restart()           #rewind video to beginning
-        elif key == "p":
-            vid.toggle_pause()      #pause/plays video
-        elif key == "m":
-            vid.toggle_mute()       #mutes/unmutes video
-        elif key == "right":
-            vid.seek(15)            #skip 15 seconds in video
-        elif key == "left":
-            vid.seek(-15)           #rewind 15 seconds in video
-
-        start_time = time.time()  # Start time of the loop iteration
+        # if a key has been pressed
+        if key: 
+            video_control(key)
 
         # Capture frame-by-frame
-        ret, frame = cap.read()
+        frame = cap.read()
 
-        rgb_frame = frame[:, :, ::-1]
-        # Find all the faces in the current frame of video
-        face_locations = face_recognition.face_locations(rgb_frame)
-        face_landmarks = face_recognition.face_landmarks(rgb_frame)
+        # reducing size and changing into grayscale for efficiency
+        frame = imutils.resize(frame, width=400)
+        grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
-        if face_locations or alert_displayed or not vid.paused:
-            # Reset the timer if face is detected
-            duration_gone = 0
-            face_gone_time = -1
-            alert_displayed = False
+        # Find all the faces and features in the current frame of video
+        face_locations = face_recognition.face_locations(frame)
+        face_landmarks = face_recognition.face_landmarks(frame)
 
-            for landmarks in face_landmarks:
-                draw_landmarks(frame, landmarks)
+        # if video is playing right now
+        if not vid.get_paused():
 
-                ear = detect_blink(landmarks)
+            # if face detected 
+            if face_locations:
                 
-                if ear < 0.2:  # Assuming 0.2 as the threshold for blink detection
-                    # Increment the closed eyes timer
-                    if closed_eyes_duration == 0:
-                        closed_time = time.time()
-                    closed_eyes_duration += 1
-                    # Reset the open eyes timer
-                    open_eyes_duration = 0
-                    opened_time = -1
-                else:
-                    # Reset the closed eyes timer
-                    if open_eyes_duration == 0:
-                        opened_time = time.time()
-                    closed_eyes_duration = 0
-                    closed_time = -1
-                    # Increment the open eyes timer
-                    open_eyes_duration += 1
-        else:
-            # Increment the timer if face is not detected
-            if duration_gone == 0:
-                face_gone_time = time.time()
-            duration_gone += 1
+                # reset 
+                gone_duration = 0
+                face_gone_time = -1
 
-        curr_time = time.time()
-        face_elapsed_time = 0
-        close_elapsed_time = 0
-        open_elapsed_time = 0
+                for landmarks in face_landmarks:
 
-        if face_gone_time >= 0:
-            face_elapsed_time = curr_time - face_gone_time
-        elif closed_time >= 0:
-            close_elapsed_time = curr_time - closed_time
-        elif opened_time >= 0:
-            open_elapsed_time = curr_time - opened_time
+                    # commented it out as we don't actually have to draw anything lol
+                    #draw_landmarks(frame, landmarks)
 
-        # Display alert message if face is not detected for more than 5 seconds
-        if not alert_displayed:
+                    ear = detect_blink(landmarks)
+                    
+                    if ear < 0.3:  # Assuming 0.2 as the threshold for blink detection
+                        
+                        # Increment the closed eyes timer
+                        if closed_eyes_duration == 0:
+                            closed_time = time.time()
+                        closed_eyes_duration += 1
+                        # Reset the open eyes timer
+                        open_eyes_duration = 0
+                        opened_time = -1
+                    else:
+                        # Reset the closed eyes timer
+                        if open_eyes_duration == 0:
+                            opened_time = time.time()
+                        closed_eyes_duration = 0
+                        closed_time = -1
+                        # Increment the open eyes timer
+                        open_eyes_duration += 1
 
+            # face is not detected
+            else:
+                # Increment the timer if face is not detected
+                if gone_duration == 0:
+                    face_gone_time = time.time()
+                gone_duration += 1
+
+            # finding time diff between curr and last time an event has occurred
+            curr_time = time.time()
+            face_elapsed_time = 0
+            close_elapsed_time = 0
+            open_elapsed_time = 0
+
+            if face_gone_time >= 0:
+                face_elapsed_time = curr_time - face_gone_time
+            elif closed_time >= 0:
+                close_elapsed_time = curr_time - closed_time
+            elif opened_time >= 0:
+                open_elapsed_time = curr_time - opened_time
+
+
+            alert = False
+
+            # if any of events are beyond timing we have set, show alert
             if face_elapsed_time >= 5:
-                vid.toggle_pause()
-                show_alert('face')
-                alert_displayed = True
+                show_alert('face', 0)
+                alert = True
+
             if face_locations:
                 if open_eyes_duration == 0 and close_elapsed_time >= 5:
-                    vid.toggle_pause()
-                    show_alert('eye')
-                    alert_displayed = True
-                    closed_time = -1
-                    opened_time = -1
-                    closed_eyes_duration = 0
-                    open_eyes_duration = 0
+                    show_alert('eye', 5)
+                    alert = True
+
                 elif closed_eyes_duration == 0 and open_elapsed_time >= 10:
-                    vid.toggle_pause()
-                    show_alert('eye')
-                    alert_displayed = True
-                    closed_time = -1
-                    opened_time = -1
-                    closed_eyes_duration = 0
-                    open_eyes_duration = 0
-                
+                    show_alert('eye', 10)
+                    alert = True
+
+            # if alert has been shown, reset all counter
+            if alert:
+                reset_counter()    
+
+        # if video is paused, reset all counter
+        else:
+            reset_counter()
 
         # Display the resulting image
         #cv2.imshow('Video', frame)
@@ -191,24 +236,10 @@ def init():
         if vid.draw(win, (0, 0), force_draw=False):
             pygame.display.update()
 
-        pygame.time.wait(16) # around 60 fps
-
-        """
-        # Calculate the time taken for the loop iteration
-        iteration_time = time.time() - start_time
-
-        # Introduce a delay to control frame rate
-        if iteration_time < 0.04:  # Adjust the value as needed for desired frame rate
-            time.sleep(0.04 - iteration_time)
-
-        """
-        
-# I want to make it so that the video only counts the seconds if the video is playing
-# If the video is paused, it would reset the count for whatever reason and not count
-# If the vidoe is playing, it would do the normal thing
+        #pygame.time.wait(16) # around 60 fps
 
     # close face detection when done
-    cap.release()
+    cap.stop()
     cv2.destroyAllWindows()
 
     # close video when done
