@@ -6,20 +6,32 @@ import pyautogui
 from scipy.spatial import distance
 import pygame
 from pyvidplayer2 import Video
+import platform
+from AppKit import NSApplication, NSAlert, NSWindow
 
 
 def show_alert(type):
-    root = tk.Tk() 
-    root.attributes("-topmost", True)  # Ensure the alert window is on top
-    root.withdraw()  # Hide the tkinter window
-    if type == 'face':
-        tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
-    elif type == 'eye':
-        tk.messagebox.showwarning("Blink Not Detected ", "Blink not detected for more than 5 seconds!")
-    root.destroy()  # Destroy the tkinter window after showing the alert
+    os_name = platform.system()
 
-    # Freeze the screen
-    #pyautogui.press('space')
+    # Check if the program is running on macOS
+    if os_name == 'Darwin':
+
+        alert = NSAlert.alloc().init()
+        alert.setMessageText_("Alert!")
+        alert.setInformativeText_("Face not detected for more than 5 seconds!")
+        response = alert.runModal()
+
+    # Check if the program is running on Windows
+    elif os_name == 'Windows':
+
+        root = tk.Tk() 
+        root.attributes("-topmost", True)  # Ensure the alert window is on top
+        root.withdraw()  # Hide the tkinter window
+        if type == 'face':
+            tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
+        elif type == 'eye':
+            tk.messagebox.showwarning("Blink Not Detected ", "Blink not detected for more than 5 seconds!")
+        root.destroy()  # Destroy the tkinter window after showing the alert
 
 def draw_landmarks(frame, landmarks):
     for landmark_type in landmarks:
@@ -53,7 +65,6 @@ def eye_aspect_ratio(eye):
     return ear
 
 def init():
-    show_alert('face')
     cap = cv2.VideoCapture(0)
 
     duration_gone = 0  # Timer to track how long the face is not detected
@@ -91,14 +102,6 @@ def init():
             vid.seek(15)            #skip 15 seconds in video
         elif key == "left":
             vid.seek(-15)           #rewind 15 seconds in video
-        elif key == "up":
-            vid.set_volume(1.0)     #max volume
-        elif key == "down":
-            vid.set_volume(0.0)     #min volume
-        elif key == "1":
-            vid.set_speed(1.0)      #regular playback speed
-        elif key == "2":
-            vid.set_speed(2.0)      #doubles video speed
 
         start_time = time.time()  # Start time of the loop iteration
 
@@ -159,10 +162,12 @@ def init():
         if not alert_displayed:
 
             if face_elapsed_time >= 5:
+                vid.toggle_pause()
                 show_alert('face')
                 alert_displayed = True
             if face_locations:
                 if open_eyes_duration == 0 and close_elapsed_time >= 5:
+                    vid.toggle_pause()
                     show_alert('eye')
                     alert_displayed = True
                     closed_time = -1
@@ -170,24 +175,23 @@ def init():
                     closed_eyes_duration = 0
                     open_eyes_duration = 0
                 elif closed_eyes_duration == 0 and open_elapsed_time >= 10:
+                    vid.toggle_pause()
                     show_alert('eye')
                     alert_displayed = True
                     closed_time = -1
                     opened_time = -1
                     closed_eyes_duration = 0
                     open_eyes_duration = 0
-
-        if alert_displayed and not vid.paused:
-            vid.toggle_pause
+                
 
         # Display the resulting image
-        cv2.imshow('Video', frame)
+        #cv2.imshow('Video', frame)
 
         # only draw new frames, and only update the screen if something is drawn
         if vid.draw(win, (0, 0), force_draw=False):
             pygame.display.update()
 
-        pygame.time.wait(30) # around 60 fps
+        pygame.time.wait(16) # around 60 fps
 
         """
         # Calculate the time taken for the loop iteration

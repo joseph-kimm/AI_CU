@@ -1,30 +1,14 @@
 import cv2
 import face_recognition
-import time
-import tkinter as tk
-from tkinter import messagebox
 from moviepy.editor import VideoFileClip
 import time
 import pygame
 from pyvidplayer2 import Video
-from pyvidplayer2 import VideoPlayer
+from plyer import notification
+import platform
+import tkinter as tk
+from AppKit import NSApplication, NSAlert, NSWindow
 
-def playVideo1():
-
-    video_path = "nba.mp4"
-
-    pygame.init()
-    pygame.display.set_caption(video_path)
-    # Define the video file path
-    
-
-    # Load the video clip
-    clip = VideoFileClip(video_path)
-
-    # Play the video
-    clip = clip.subclip(0, 10) 
-    clip.preview(fps= 60)  # This will start playing the vide
-    pygame.quit()
 
 # function to play video
 def playVideo2():
@@ -50,6 +34,7 @@ def playVideo2():
             vid.restart()           #rewind video to beginning
         elif key == "p":
             vid.toggle_pause()      #pause/plays video
+            pygame.display.flip()
         elif key == "m":
             vid.toggle_mute()       #mutes/unmutes video
         elif key == "right":
@@ -114,5 +99,35 @@ def multiVideo():
     cap1.release()
     #cap2.release()
     cv2.destroyAllWindows()
+
+def show_alert():
+
+    os_name = platform.system()
+
+    # Check if the program is running on macOS
+    if os_name == 'Darwin':
+        print("Running on macOS")
+
+        app = NSApplication.sharedApplication()  # Optional if you don't have an existing instance
+
+        alert = NSAlert.alloc().init()
+        alert.setMessageText_("Alert!")
+        alert.setInformativeText_("Face not detected for more than 5 seconds!")
+        response = alert.runModal()
+
+        app.terminate_(0)
+
+    # Check if the program is running on Windows
+    elif os_name == 'Windows':
+        print("Running on Windows")
+
+        root = tk.Tk() 
+        root.attributes("-topmost", True)  # Ensure the alert window is on top
+        root.withdraw()  # Hide the tkinter window
+        if type == 'face':
+            tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
+        elif type == 'eye':
+            tk.messagebox.showwarning("Blink Not Detected ", "Blink not detected for more than 5 seconds!")
+        root.destroy()  # Destroy the tkinter window after showing the alert
 
 playVideo2()
