@@ -5,5 +5,11 @@ Install necessary libraries
 ```
 pip install opencv-python
 pip install face_recognition
+pip install tk
+pip install pygame
+pip install pyvidplayer2
+pip install imutils
 ```
+
+
 
