@@ -18,28 +18,48 @@ except ModuleNotFoundError:
   pass
 
 # global vid
-vid = Video("txt.mp4")
-global face_gone_time, closed_time, opened_time, gone_duration, closed_eyes_duration, open_eyes_duration
+vid = Video("Procrastination.mp4")
+global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
+      gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp
+
+def initial_values():
+    global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
+        gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
+    
+    gone_timestamp = -1
+    closed_timestamp = -1
+
+    gone_alarm_duration = 0
+    closed_alarm_duration = 0
+    gone_alarm_count = 0
+    closed_alarm_count = 0
+    pause_duration = 0
+    face_gone = False
+    face_closed = False
+
+    # setting the limit of learning time
+    duration_limit = 1 *60
+
 
 def reset_counter():
-    global face_gone_time, closed_time, opened_time, gone_duration, closed_eyes_duration, open_eyes_duration
-    face_gone_time = -1
-    closed_time = -1
-    opened_time = -1
-    gone_duration = 0  # Timer to track how long the face is not detected
-    closed_eyes_duration = 0 # Timer to track how long eyes are closed for
-    open_eyes_duration = 0 # Timer to track how long eyes are open for
+    global gone_timestamp, closed_timestamp, face_gone, face_closed
+    gone_timestamp = -1
+    closed_timestamp = -1
+
+    face_gone = False
+    face_closed = False
 
 # showing alert
 def show_alert(type, blink):
+    global gone_alarm_duration, closed_alarm_duration, gone_alarm_count, closed_alarm_count
 
     os_name = platform.system()
 
-    # Check if the program is running on macOS
+    vid.toggle_pause()
+    alarm_timestamp = time.time()
+
+    # if computer is running on MacOS
     if os_name == 'Darwin':
-
-        vid.toggle_pause()
-
         alert = NSAlert.alloc().init()
         alert.setMessageText_("Alert!")
 
@@ -47,25 +67,32 @@ def show_alert(type, blink):
             alert.setInformativeText_("Face not detected for more than 5 seconds!")
 
         elif type == 'eye':
-            alert.setInformativeText_("Blink not detected for more than " + str(blink) + " seconds!")
+            alert.setInformativeText_("Eyes closed for more than " + str(blink) + " seconds!")
         
         response = alert.runModal()
-        vid.toggle_pause()
 
-    # Check if the program is running on Windows
+    # if computer is running on Windows
     elif os_name == 'Windows':
         root = tk.Tk() 
         root.attributes("-topmost", True)  # Ensure the alert window is on top
         root.withdraw()  # Hide the tkinter window
-        vid.toggle_pause()
-        reset_counter()
+
         if type == 'face':
             tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
         elif type == 'eye':
-            tk.messagebox.showwarning("Blink Not Detected ", "Blink not detected for more than " + str(blink) + " seconds!")
-        vid.toggle_pause()
-        root.destroy()  # Destroy the tkinter window after showing the alert
+            tk.messagebox.showwarning("Eyes closed ", "Eyes closed for more than " + str(blink) + " seconds!")
 
+        root.destroy()
+    
+    vid.toggle_pause()
+    
+    if type == 'face':
+        gone_alarm_duration += time.time() - alarm_timestamp
+        gone_alarm_count += 1
+    
+    elif type == 'eye':
+        closed_alarm_duration += time.time() - alarm_timestamp
+        closed_alarm_count += 1
 
 # drawing points in face
 def draw_landmarks(frame, landmarks):
@@ -88,6 +115,7 @@ def detect_blink(landmarks):
 
     return avg_eye_aspect_ratio
 
+
 def eye_aspect_ratio(eye):
     # Compute the euclidean distances between the two sets of vertical eye landmarks
     a = distance.euclidean(eye[1], eye[5])
@@ -100,39 +128,65 @@ def eye_aspect_ratio(eye):
     ear = (a + b) / (2.0 * c)
     return ear
 
+
 def video_control(key):
+
+    global pause_duration, paused_timestamp, resume_timestamp
+
     if key == "q":
             vid.stop()
-    elif key == "r":
-        vid.restart()           #rewind video to beginning
-    elif key == "p":
+              
+    elif key == "space":
         vid.toggle_pause()      #pause/plays video
+
+        # records timestamp of when it was paused
+        if vid.paused:
+            paused_timestamp = time.time()
+        
+        # records timestamp of when it was resumed
+        # adds the total time video was paused to pause_duration
+        else:
+            resume_timestamp = time.time()
+            pause_duration += resume_timestamp - paused_timestamp
+
         reset_counter()
-    elif key == "m":
-        vid.toggle_mute()       #mutes/unmutes video
-    elif key == "right":
-        vid.seek(15)            #skip 15 seconds in video
     elif key == "left":
         vid.seek(-15)           #rewind 15 seconds in video
+
+    # keys that are not required for the program
+    """
+    elif key == "r":            #rewind video to beginning
+        vid.restart() 
+    elif key == "right":
+        vid.seek(15)            #skip 15 seconds in video
+    elif key == "m":
+        vid.toggle_mute()       #mutes/unmutes video
+    """
+
+def display_link():
+    return
 
 def init():
 
     # getting face image from camera
     cap = WebCamVideo.WebcamVideoStream(src=0).start()
 
-    global face_gone_time, closed_time, opened_time, gone_duration, closed_eyes_duration, open_eyes_duration
+    global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
+          gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
 
-    # reset all the counters that we havey
-    reset_counter()
+    # reset all the counters that we have
+    initial_values()
 
     # setting display for the educatinal video
     win = pygame.display.set_mode(vid.current_size)
     pygame.display.set_caption(vid.name)
 
+    start_time = time.time()
+
     # while there is a video
     while vid.active:
 
-        # detecting any keys taht are pressed
+        # detecting any keys that are pressed
         key = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -141,7 +195,7 @@ def init():
                 key = pygame.key.name(event.key)
 
         # if a key has been pressed
-        if key: 
+        if key:
             video_control(key)
 
         # Capture frame-by-frame
@@ -158,12 +212,17 @@ def init():
         # if video is playing right now
         if not vid.get_paused():
 
+            curr_time = time.time()
+            if curr_time - start_time - pause_duration - gone_alarm_duration - closed_alarm_duration >= duration_limit:
+                print(vid.get_pos())
+                vid.stop()
+
             # if face detected 
             if face_locations:
                 
-                # reset 
-                gone_duration = 0
-                face_gone_time = -1
+                # reset
+                face_gone = False
+                gone_timestamp = -1
 
                 for landmarks in face_landmarks:
 
@@ -172,63 +231,38 @@ def init():
 
                     ear = detect_blink(landmarks)
                     
+                    # eyes closed
                     if ear < 0.25:  # Assuming 0.2 as the threshold for blink detection
-                        # Increment the closed eyes timer
-                        if closed_eyes_duration == 0:
-                            closed_time = time.time()
-                        closed_eyes_duration += 1
-                        # Reset the open eyes timer
-                        open_eyes_duration = 0
-                        opened_time = -1
+
+                        # set time stamp if eyes closed for the first time
+                        if not face_closed:
+                            closed_timestamp = time.time()
+                        face_closed = True
+
+                    # eyes open
                     else:
-                        # Reset the closed eyes timer
-                        if open_eyes_duration == 0:
-                            opened_time = time.time()
-                        closed_eyes_duration = 0
-                        closed_time = -1
-                        # Increment the open eyes timer
-                        open_eyes_duration += 1
+                        face_closed = False
+                        closed_timestamp = -1
 
             # face is not detected
             else:
-                # Increment the timer if face is not detected
-                if gone_duration == 0:
-                    face_gone_time = time.time()
-                gone_duration += 1
+
+                # set time stamp if face_gone for the first time
+                if not face_gone:
+                    gone_timestamp = time.time()
+                face_gone = True
 
             # finding time diff between curr and last time an event has occurred
             curr_time = time.time()
-            face_elapsed_time = 0
-            close_elapsed_time = 0
-            open_elapsed_time = 0
 
-            if face_gone_time >= 0:
-                face_elapsed_time = curr_time - face_gone_time
-            elif closed_time >= 0:
-                close_elapsed_time = curr_time - closed_time
-            elif opened_time >= 0:
-                open_elapsed_time = curr_time - opened_time
-
-
-            alert = False
-
-            # if any of events are beyond timing we have set, show alert
-            if face_elapsed_time >= 5:
+            # if face was gone for more than 5 seconds
+            if gone_timestamp >= 0 and curr_time - gone_timestamp >= 5: 
                 show_alert('face', 0)
-                alert = True
+                reset_counter()
 
-            if face_locations:
-                if open_eyes_duration == 0 and close_elapsed_time >= 5:
-                    show_alert('eye', 5)
-                    alert = True
-
-                elif closed_eyes_duration == 0 and open_elapsed_time >= 20:
-                    show_alert('eye', 20)
-                    alert = True
-
-            # if alert has been shown, reset all counter
-            if alert:
-                reset_counter()    
+            if closed_timestamp >= 0 and curr_time - closed_timestamp >= 5:
+                show_alert('eye', 5)
+                reset_counter() 
 
         # if video is paused, reset all counter
         else:
@@ -252,3 +286,8 @@ def init():
     pygame.quit()
 
 init()
+print(closed_alarm_count)
+print(closed_alarm_duration)
+print(gone_alarm_count)
+print(gone_alarm_duration)
+print(pause_duration)
