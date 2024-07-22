@@ -7,9 +7,12 @@ import pygame
 from pyvidplayer2 import Video
 import platform
 from tkinter import messagebox
-import WebCamVideo
 import imutils
 from pymongo import MongoClient
+
+import WebCamVideo
+import DisplayLink
+import DisplayIntro
 
 # Try importing AppKit for macOS functionality (if available)
 try:
@@ -18,8 +21,10 @@ try:
 except ModuleNotFoundError:
   pass
 
+pygame.init()
+
 # global vid
-vid = Video("ani.mp4")
+vid = Video("Procrastination.mp4")
 global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
       gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp
 
@@ -164,9 +169,6 @@ def video_control(key):
         vid.toggle_mute()       #mutes/unmutes video
     """
 
-def display_link():
-    return
-
 def save_to_db(data):
     # Connect to MongoDB (Replace <username>, <password>, and <cluster-url> with your MongoDB credentials)
     client = MongoClient("mongodb+srv://eunclar:RLAskawn123!@mongocluster.g3klhii.mongodb.net/")
@@ -285,8 +287,6 @@ def init():
         if vid.draw(win, (0, 0), force_draw=False):
             pygame.display.update()
 
-        #pygame.time.wait(16) # around 60 fps
-
     # close face detection when done
     cap.stop()
     cv2.destroyAllWindows()
@@ -304,7 +304,10 @@ def init():
     }
     save_to_db(data)
 
-init()
+if DisplayIntro.display_intro():
+    init()
+    DisplayLink.display_link()
+
 print(closed_alarm_count)
 print(closed_alarm_duration)
 print(gone_alarm_count)
