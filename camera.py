@@ -9,6 +9,7 @@ import platform
 from tkinter import messagebox
 import WebCamVideo
 import imutils
+import webbrowser
 
 # Try importing AppKit for macOS functionality (if available)
 try:
@@ -163,9 +164,6 @@ def video_control(key):
         vid.toggle_mute()       #mutes/unmutes video
     """
 
-def display_link():
-    return
-
 def init():
 
     # getting face image from camera
@@ -274,8 +272,6 @@ def init():
         # only draw new frames, and only update the screen if something is drawn
         if vid.draw(win, (0, 0), force_draw=False):
             pygame.display.update()
-
-        #pygame.time.wait(16) # around 60 fps
 
     # close face detection when done
     cap.stop()
