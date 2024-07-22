@@ -9,6 +9,7 @@ import platform
 from tkinter import messagebox
 import WebCamVideo
 import imutils
+from pymongo import MongoClient
 
 # Try importing AppKit for macOS functionality (if available)
 try:
@@ -18,7 +19,7 @@ except ModuleNotFoundError:
   pass
 
 # global vid
-vid = Video("Procrastination.mp4")
+vid = Video("ani.mp4")
 global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
       gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp
 
@@ -166,8 +167,16 @@ def video_control(key):
 def display_link():
     return
 
-def init():
+def save_to_db(data):
+    # Connect to MongoDB (Replace <username>, <password>, and <cluster-url> with your MongoDB credentials)
+    client = MongoClient("mongodb+srv://eunclar:RLAskawn123!@mongocluster.g3klhii.mongodb.net/")
+    db = client['user_data']
+    collection = db['video_data']
+    
+    # Insert the data into the collection
+    collection.insert_one(data)
 
+def init():
     # getting face image from camera
     cap = WebCamVideo.WebcamVideoStream(src=0).start()
 
@@ -263,6 +272,7 @@ def init():
             if closed_timestamp >= 0 and curr_time - closed_timestamp >= 5:
                 show_alert('eye', 5)
                 reset_counter() 
+            
 
         # if video is paused, reset all counter
         else:
@@ -284,6 +294,15 @@ def init():
     # close video when done
     vid.close()
     pygame.quit()
+
+    data = {
+        "closed_alarm_count": closed_alarm_count,
+        "closed_alarm_duration": closed_alarm_duration,
+        "gone_alarm_count": gone_alarm_count,
+        "gone_alarm_duration": gone_alarm_duration,
+        "pause_duration": pause_duration
+    }
+    save_to_db(data)
 
 init()
 print(closed_alarm_count)
