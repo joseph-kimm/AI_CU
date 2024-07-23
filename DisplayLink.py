@@ -1,6 +1,7 @@
 import webbrowser
 import pygame
 
+# displaying the links to survey and quiz
 def display_link():
 
     # putting text on the screen
@@ -16,6 +17,7 @@ def display_link():
         mouse_pos = pygame.mouse.get_pos()
         mouse_clicked = pygame.mouse.get_pressed()[0]
 
+        # if mouse is around the link
         if text_rect.collidepoint(mouse_pos):
             if mouse_clicked:
                 webbrowser.open(link)  # Open the hyperlink in the web browser
@@ -25,9 +27,12 @@ def display_link():
 
     # wrapping text to fit within display
     def wrap_text(text, font, max_width):
+
         words = text.split(' ')
         lines = []
         current_line = ''
+
+        # adding words into a string until they cannot fit in one line
         for word in words:
             test_line = current_line + word + ' '
             # Check the width of the test_line
@@ -36,13 +41,17 @@ def display_link():
             else:
                 lines.append(current_line)
                 current_line = word + ' '
+
+        # adding rest of the remaining words
         if current_line != '':
             lines.append(current_line)
+
         return lines
 
-
+    # initializing pygame
     pygame.init()
 
+    # setting values such as colors and size of display
     WHITE = (255, 255, 255)
     BLACK = (0,0,0)
     BLUE = (0, 0, 255)

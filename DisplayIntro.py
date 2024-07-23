@@ -11,9 +11,12 @@ def display_intro():
     
     # wrapping text to fit within display
     def wrap_text(text, font, max_width):
+
         words = text.split(' ')
         lines = []
         current_line = ''
+
+        # adding words into a string until they cannot fit in one line
         for word in words:
             test_line = current_line + word + ' '
             # Check the width of the test_line
@@ -22,20 +25,25 @@ def display_intro():
             else:
                 lines.append(current_line)
                 current_line = word + ' '
+
+        # adding rest of the remaining words
         if current_line != '':
             lines.append(current_line)
-        return lines
 
+        return lines
+    
+    # initializing pygame
     pygame.init()
 
+    # setting values such as colors and size of display
     WHITE = (255, 255, 255)
     BLACK = (0,0,0)
     BLUE = (0, 0, 255)
-    RED = (255, 0, 0)
-    LIGHT_BLUE = (100, 100, 255)
+    LIGHT_BLUE = (0, 100, 255)
 
     width = 800
     height = 400
+
 
     # Set up the display
     screen = pygame.display.set_mode((width, height))
@@ -81,7 +89,6 @@ def display_intro():
             screen.blit(line_surface, (50, i * font.get_height()+ y_position))
 
         y_position = y_position + (len(text_lines_2) + 1) * font.get_height()
-
 
         # Draw button
         button_rect = render_text(button_text, font, WHITE, (button_x, y_position))

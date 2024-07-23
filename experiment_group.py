@@ -307,9 +307,3 @@ def init():
 if DisplayIntro.display_intro():
     init()
     DisplayLink.display_link()
-
-print(closed_alarm_count)
-print(closed_alarm_duration)
-print(gone_alarm_count)
-print(gone_alarm_duration)
-print(pause_duration)
