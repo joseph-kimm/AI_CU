@@ -21,13 +21,6 @@ try:
 except ModuleNotFoundError:
   pass
 
-pygame.init()
-
-# global vid
-vid = Video("Procrastination.mp4")
-global gone_timestamp, closed_timestamp, face_gone, face_closed, \
-      gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp
-
 def initial_values():
     global gone_timestamp, closed_timestamp, face_gone, face_closed, \
         gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
@@ -136,7 +129,7 @@ def init():
     cap = WebCamVideo.WebcamVideoStream(src=0).start()
 
     global gone_timestamp, closed_timestamp, face_gone, face_closed, \
-          gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
+          gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, assigned_num
 
     # reset all the counters that we have
     initial_values()
@@ -155,7 +148,7 @@ def init():
         key = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                vid.stop()
+                pass
             elif event.type == pygame.KEYDOWN:
                 key = pygame.key.name(event.key)
 
@@ -250,12 +243,23 @@ def init():
     pygame.quit()
 
     data = {
+        "num": assigned_num,
         "closed_alarm_count": closed_alarm_count,
         "gone_alarm_count": gone_alarm_count,
         "pause_duration": pause_duration
     }
     save_to_db(data)
 
-if DisplayIntro.display_intro():
-    init()
-    DisplayLink.display_link()
+if __name__ == "__main__":
+    pygame.init()
+
+    # global vid
+    vid = Video("Procrastination.mp4")
+    global gone_timestamp, closed_timestamp, face_gone, face_closed, \
+    gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp, assigned_num
+
+    assigned_num = input('Enter user number: ')
+
+    if DisplayIntro.display_intro():
+        init()
+        DisplayLink.display_link()

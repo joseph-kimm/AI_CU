@@ -21,13 +21,6 @@ try:
 except ModuleNotFoundError:
   pass
 
-pygame.init()
-
-# global vid
-vid = Video("Procrastination.mp4")
-global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
-      gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp
-
 def initial_values():
     global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
         gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
@@ -67,13 +60,13 @@ def show_alert(type, blink):
     # if computer is running on MacOS
     if os_name == 'Darwin':
         alert = NSAlert.alloc().init()
-        alert.setMessageText_("Alert!")
+        alert.setMessageText_("경고!")
 
         if type == 'face':
-            alert.setInformativeText_("Face not detected for more than 5 seconds!")
+            alert.setInformativeText_("5초 이상 얼굴이 감지되지 않았습니다.")
 
         elif type == 'eye':
-            alert.setInformativeText_("Eyes closed for more than " + str(blink) + " seconds!")
+            alert.setInformativeText_("5초 이상 눈을 감고 있었습니다.")
         
         response = alert.runModal()
 
@@ -84,9 +77,9 @@ def show_alert(type, blink):
         root.withdraw()  # Hide the tkinter window
 
         if type == 'face':
-            tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
+            tk.messagebox.showwarning("경고!", "5초 이상 얼굴이 감지되지 않았습니다.")
         elif type == 'eye':
-            tk.messagebox.showwarning("Eyes closed ", "Eyes closed for more than " + str(blink) + " seconds!")
+            tk.messagebox.showwarning("경고!", "5초 이상 눈을 감고 있었습니다.")
 
         root.destroy()
     
@@ -183,7 +176,7 @@ def init():
     cap = WebCamVideo.WebcamVideoStream(src=0).start()
 
     global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
-          gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
+          gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, assigned_num
 
     # reset all the counters that we have
     initial_values()
@@ -201,7 +194,7 @@ def init():
         key = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                vid.stop()
+                pass
             elif event.type == pygame.KEYDOWN:
                 key = pygame.key.name(event.key)
 
@@ -296,6 +289,7 @@ def init():
     pygame.quit()
 
     data = {
+        "num": assigned_num,
         "closed_alarm_count": closed_alarm_count,
         "closed_alarm_duration": closed_alarm_duration,
         "gone_alarm_count": gone_alarm_count,
@@ -304,6 +298,16 @@ def init():
     }
     save_to_db(data)
 
-if DisplayIntro.display_intro():
-    init()
-    DisplayLink.display_link()
+if __name__ == "__main__":
+    pygame.init()
+
+    # global vid
+    vid = Video("Procrastination.mp4")
+    global gone_timestamp, closed_timestamp, face_gone, face_closed, \
+    gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp, assigned_num
+
+    assigned_num = input('Enter user number: ')
+
+    if DisplayIntro.display_intro():
+        init()
+        DisplayLink.display_link()

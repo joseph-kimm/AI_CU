@@ -55,39 +55,48 @@ def display_link():
     WHITE = (255, 255, 255)
     BLACK = (0,0,0)
     BLUE = (0, 0, 255)
-    RED = (255, 0, 0)
+    LIGHT_BLUE = (0, 100, 255)
 
     width = 800
     height = 400
 
     # Set up the display
-    screen = pygame.display.set_mode((width, height))
+    screen = pygame.display.set_mode((width, height), flags=pygame.NOFRAME)
     pygame.display.set_caption("Display Quiz and Survey")
 
-    font = pygame.font.Font('Nanum/NanumGothicCoding-Regular.ttf', 36)
+    font = pygame.font.Font('resource/Nanum/NanumGothicCoding-Regular.ttf', 32)
 
-    intro = "영상을 시청해주셔서 감사합니다. 마지막으로 퀴즈와 설문지를 작성해주세요"
+    intro = "영상을 시청해주셔서 감사합니다. 마지막으로 퀴즈와 설문지를 작성해주세요."
     
     intro_lines = wrap_text(intro, font, width-50)
 
     links = [("퀴즈", "https://www.google.com"),
              ("설문지", "https://www.youtube.com")]
     
+    yonsei = pygame.image.load('resource/image/Yonsei_Uni_Logo.png')
+    yonsei = pygame.transform.smoothscale(yonsei, (50,50))
+    yonsei_x = width/2 - yonsei.get_width()/2
+    
     running = True
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pass
         
         screen.fill(WHITE)
 
-        # Draw each line of text onto the screen
+        screen.blit(yonsei, (yonsei_x, 25))
+
+        y_position = 50 + yonsei.get_height()
+
         for i, line in enumerate(intro_lines):
             line_surface = font.render(line, True, BLACK)
-            screen.blit(line_surface, (50, i * font.get_height()+50))
+            screen.blit(line_surface, (50, y_position))
+
+            y_position += font.get_height()+2
         
-        y_position = (len(intro_lines) + 1) * font.get_height() + 50
+        y_position += font.get_height()
 
         for text, link in links:
 
@@ -100,10 +109,13 @@ def display_link():
             # Check if the hyperlink is hovered or clicked
             if check_hyperlink(text_rect, link):
                 # Change color to red when hovered
-                text_rect = render_text(text, RED, (50, y_position))
+                text_rect = render_text(text, LIGHT_BLUE, (50, y_position))
             
             y_position += (2 * font.get_height())
 
         pygame.display.flip()
 
     pygame.quit()
+
+if __name__ == "__main__":
+    display_link()
