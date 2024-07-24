@@ -11,9 +11,12 @@ def display_intro():
     
     # wrapping text to fit within display
     def wrap_text(text, font, max_width):
+
         words = text.split(' ')
         lines = []
         current_line = ''
+
+        # adding words into a string until they cannot fit in one line
         for word in words:
             test_line = current_line + word + ' '
             # Check the width of the test_line
@@ -22,43 +25,57 @@ def display_intro():
             else:
                 lines.append(current_line)
                 current_line = word + ' '
+
+        # adding rest of the remaining words
         if current_line != '':
             lines.append(current_line)
-        return lines
 
+        return lines
+    
+    # initializing pygame
     pygame.init()
 
+    # setting values such as colors and size of display
     WHITE = (255, 255, 255)
     BLACK = (0,0,0)
     BLUE = (0, 0, 255)
-    RED = (255, 0, 0)
-    LIGHT_BLUE = (100, 100, 255)
+    LIGHT_BLUE = (0, 100, 255)
 
     width = 800
     height = 400
 
+
     # Set up the display
-    screen = pygame.display.set_mode((width, height))
+    screen = pygame.display.set_mode((width, height), flags=pygame.NOFRAME)
     pygame.display.set_caption("Start Display")
 
-    font = pygame.font.Font('Nanum/NanumGothicCoding-Regular.ttf', 24)
+    font = pygame.font.Font('resource/Nanum/NanumGothicCoding-Regular.ttf', 20)
 
     # Display instructions
     instructions_text_1 = "귀하는 60분 정도 분량의 동영상 1개를 보게 될 것입니다. 해당 동영상은 장애인식개선교육에 대한 것입니다. 동영상을 본 후 연구자가 주관하는 퀴즈와 설문 조사에 참여하도록 요청받을 것입니다."
-    instructions_text_2 = "동영상을 시청하실려면 아래의 시작 버튼을 클릭해주세요"
+    instructions_text_2 = "실험 설계 상 모든 실험참가자의 학습시간은 65분으로 고정 되있습니다. 영상재생 시간이 65분이 지나면 (영상 중지한 시간은 포함 안함) 자동으로 영상이 중단될 것입니다."
+    instructions_text_3 = "영상을 중지하려면 스패이스바를, 15초 돌아갈려면 왼쪽방향키를 눌러주세요."
+    instructions_text_4 = "동영상을 시청하실려면 아래의 시작 버튼을 클릭해주세요."
 
-    text_lines_1 = wrap_text(instructions_text_1, font, width-50)
-    text_lines_2 = wrap_text(instructions_text_2, font, width-50)
-
+    text_lines = []
+    text_lines.append(wrap_text(instructions_text_1, font, width-50))
+    text_lines.append(wrap_text(instructions_text_2, font, width-50))
+    text_lines.append(wrap_text(instructions_text_3, font, width-50))
+    text_lines.append(wrap_text(instructions_text_4, font, width-50))
+    
     button_text = "시작"
     button_x = width/2 - font.size(button_text)[0]/2
+
+    yonsei = pygame.image.load('resource/image/Yonsei_Uni_Logo.png')
+    yonsei = pygame.transform.smoothscale(yonsei, (50,50))
+    yonsei_x = width/2 - yonsei.get_width()/2
 
     running = True
 
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                running = False
+                pass
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 # Check if the mouse click is within the button area
@@ -68,20 +85,21 @@ def display_intro():
         # Fill the screen with white background
         screen.fill(WHITE)
 
-        # Draw line 1
-        for i, line in enumerate(text_lines_1):
-            line_surface = font.render(line, True, BLACK)
-            screen.blit(line_surface, (50, i * font.get_height()+50))
+        screen.blit(yonsei, (yonsei_x, 25))
 
-        y_position = (len(text_lines_1) + 1) * font.get_height() + 50
+        y_position = 50 + yonsei.get_height()
 
-        # Draw line 2
-        for i, line in enumerate(text_lines_2):
-            line_surface = font.render(line, True, BLACK)
-            screen.blit(line_surface, (50, i * font.get_height()+ y_position))
+        # Putting the texts to fit the display
+        for text_line in text_lines:
+            
+            # drawing each line
+            for i, line in enumerate(text_line):
+                line_surface = font.render(line, True, BLACK)
+                screen.blit(line_surface, (30, y_position))
 
-        y_position = y_position + (len(text_lines_2) + 1) * font.get_height()
+                y_position += font.get_height()+1
 
+            y_position += font.get_height()
 
         # Draw button
         button_rect = render_text(button_text, font, WHITE, (button_x, y_position))
@@ -99,3 +117,7 @@ def display_intro():
         render_text(button_text, font, WHITE, button_rect.topleft)
 
         pygame.display.flip()
+
+
+if __name__ == "__main__":
+    display_intro()

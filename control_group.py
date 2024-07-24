@@ -21,22 +21,13 @@ try:
 except ModuleNotFoundError:
   pass
 
-pygame.init()
-
-# global vid
-vid = Video("ani.mp4")
-global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
-      gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp
-
 def initial_values():
-    global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
+    global gone_timestamp, closed_timestamp, face_gone, face_closed, \
         gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
     
     gone_timestamp = -1
     closed_timestamp = -1
 
-    gone_alarm_duration = 0
-    closed_alarm_duration = 0
     gone_alarm_count = 0
     closed_alarm_count = 0
     pause_duration = 0
@@ -54,51 +45,6 @@ def reset_counter():
 
     face_gone = False
     face_closed = False
-
-# showing alert
-def show_alert(type, blink):
-    global gone_alarm_duration, closed_alarm_duration, gone_alarm_count, closed_alarm_count
-
-    os_name = platform.system()
-
-    vid.toggle_pause()
-    alarm_timestamp = time.time()
-
-    # if computer is running on MacOS
-    if os_name == 'Darwin':
-        alert = NSAlert.alloc().init()
-        alert.setMessageText_("Alert!")
-
-        if type == 'face':
-            alert.setInformativeText_("Face not detected for more than 5 seconds!")
-
-        elif type == 'eye':
-            alert.setInformativeText_("Eyes closed for more than " + str(blink) + " seconds!")
-        
-        response = alert.runModal()
-
-    # if computer is running on Windows
-    elif os_name == 'Windows':
-        root = tk.Tk() 
-        root.attributes("-topmost", True)  # Ensure the alert window is on top
-        root.withdraw()  # Hide the tkinter window
-
-        if type == 'face':
-            tk.messagebox.showwarning("Face Not Detected ", "Face not detected for more than 5 seconds!")
-        elif type == 'eye':
-            tk.messagebox.showwarning("Eyes closed ", "Eyes closed for more than " + str(blink) + " seconds!")
-
-        root.destroy()
-    
-    vid.toggle_pause()
-    
-    if type == 'face':
-        gone_alarm_duration += time.time() - alarm_timestamp
-        gone_alarm_count += 1
-    
-    elif type == 'eye':
-        closed_alarm_duration += time.time() - alarm_timestamp
-        closed_alarm_count += 1
 
 # drawing points in face
 def draw_landmarks(frame, landmarks):
@@ -182,8 +128,8 @@ def init():
     # getting face image from camera
     cap = WebCamVideo.WebcamVideoStream(src=0).start()
 
-    global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
-          gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
+    global gone_timestamp, closed_timestamp, face_gone, face_closed, \
+          gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, assigned_num
 
     # reset all the counters that we have
     initial_values()
@@ -192,6 +138,7 @@ def init():
     win = pygame.display.set_mode(vid.current_size)
     pygame.display.set_caption(vid.name)
 
+    # getting the the timestamp of when vidoe started
     start_time = time.time()
 
     # while there is a video
@@ -201,7 +148,7 @@ def init():
         key = None
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                vid.stop()
+                pass
             elif event.type == pygame.KEYDOWN:
                 key = pygame.key.name(event.key)
 
@@ -224,7 +171,7 @@ def init():
         if not vid.get_paused():
 
             curr_time = time.time()
-            if curr_time - start_time - pause_duration - gone_alarm_duration - closed_alarm_duration >= duration_limit:
+            if curr_time - start_time - pause_duration >= duration_limit:
                 print(vid.get_pos())
                 vid.stop()
 
@@ -268,11 +215,11 @@ def init():
 
             # if face was gone for more than 5 seconds
             if gone_timestamp >= 0 and curr_time - gone_timestamp >= 5: 
-                show_alert('face', 0)
+                gone_alarm_count += 1
                 reset_counter()
 
             if closed_timestamp >= 0 and curr_time - closed_timestamp >= 5:
-                show_alert('eye', 5)
+                closed_alarm_count += 1
                 reset_counter() 
             
 
@@ -296,20 +243,23 @@ def init():
     pygame.quit()
 
     data = {
+        "num": assigned_num,
         "closed_alarm_count": closed_alarm_count,
-        "closed_alarm_duration": closed_alarm_duration,
         "gone_alarm_count": gone_alarm_count,
-        "gone_alarm_duration": gone_alarm_duration,
         "pause_duration": pause_duration
     }
     save_to_db(data)
 
-if DisplayIntro.display_intro():
-    init()
-    DisplayLink.display_link()
+if __name__ == "__main__":
+    pygame.init()
 
-print(closed_alarm_count)
-print(closed_alarm_duration)
-print(gone_alarm_count)
-print(gone_alarm_duration)
-print(pause_duration)
+    # global vid
+    vid = Video("Procrastination.mp4")
+    global gone_timestamp, closed_timestamp, face_gone, face_closed, \
+    gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp, assigned_num
+
+    assigned_num = input('Enter user number: ')
+
+    if DisplayIntro.display_intro():
+        init()
+        DisplayLink.display_link()
