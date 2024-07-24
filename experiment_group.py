@@ -17,20 +17,11 @@ import DisplayIntro
 # Try importing AppKit for macOS functionality (if available)
 try:
   if platform.system() == "Darwin":  # Check for macOS using platform module
-    from AppKit import NSApplication, NSAlert, NSWindow
+    from AppKit import NSApplication, NSAlert, NSWindow, NSSound
+    from Foundation import NSAutoreleasePool
 except ModuleNotFoundError:
   pass
 
-<<<<<<< HEAD:camera.py
-pygame.init()
-
-# global vid
-vid = Video("ani.mp4")
-global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
-      gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp
-
-=======
->>>>>>> 70cdab5033018a0fa6ab5a5e1397f914f8f887a1:experiment_group.py
 def initial_values():
     global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
         gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
@@ -69,6 +60,7 @@ def show_alert(type, blink):
 
     # if computer is running on MacOS
     if os_name == 'Darwin':
+        pool = NSAutoreleasePool.alloc().init()
         alert = NSAlert.alloc().init()
         alert.setMessageText_("경고!")
 
@@ -78,17 +70,23 @@ def show_alert(type, blink):
         elif type == 'eye':
             alert.setInformativeText_("5초 이상 눈을 감고 있었습니다.")
         
+        NSSound.soundNamed_("Glass").play()
+
         response = alert.runModal()
+        del pool
 
     # if computer is running on Windows
     elif os_name == 'Windows':
+        import winsound
         root = tk.Tk() 
         root.attributes("-topmost", True)  # Ensure the alert window is on top
         root.withdraw()  # Hide the tkinter window
 
         if type == 'face':
+            winsound.Beep(3000, 200) 
             tk.messagebox.showwarning("경고!", "5초 이상 얼굴이 감지되지 않았습니다.")
         elif type == 'eye':
+            winsound.Beep(3000, 200) 
             tk.messagebox.showwarning("경고!", "5초 이상 눈을 감고 있었습니다.")
 
         root.destroy()
@@ -176,7 +174,7 @@ def save_to_db(data):
     # Connect to MongoDB (Replace <username>, <password>, and <cluster-url> with your MongoDB credentials)
     client = MongoClient("mongodb+srv://eunclar:RLAskawn123!@mongocluster.g3klhii.mongodb.net/")
     db = client['user_data']
-    collection = db['video_data']
+    collection = db['experiment_data']
     
     # Insert the data into the collection
     collection.insert_one(data)
@@ -221,7 +219,16 @@ def init():
 
         # Find all the faces and features in the current frame of video
         face_locations = face_recognition.face_locations(frame)
-        face_landmarks = face_recognition.face_landmarks(frame)
+
+        # for detecting 1 face at a time
+        if face_locations:
+            one_face_location = face_locations[0]
+            face_landmarks_list = face_recognition.face_landmarks(frame, [one_face_location])
+            one_face_landmark = face_landmarks_list[0] if face_landmarks_list else None
+
+
+
+        # face_landmarks = face_recognition.face_landmarks(frame)
 
         # if video is playing right now
         if not vid.get_paused():
@@ -238,12 +245,12 @@ def init():
                 face_gone = False
                 gone_timestamp = -1
 
-                for landmarks in face_landmarks:
+                if one_face_landmark:
 
                     # commented it out as we don't actually have to draw anything lol
-                    draw_landmarks(frame, landmarks)
+                    draw_landmarks(frame, one_face_landmark)
 
-                    ear = detect_blink(landmarks)
+                    ear = detect_blink(one_face_landmark)
                     
                     # eyes closed
                     if ear < 0.25:  # Assuming 0.2 as the threshold for blink detection
@@ -312,7 +319,7 @@ if __name__ == "__main__":
     pygame.init()
 
     # global vid
-    vid = Video("Procrastination.mp4")
+    vid = Video("txt.mp4")
     global gone_timestamp, closed_timestamp, face_gone, face_closed, \
     gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp, assigned_num
 

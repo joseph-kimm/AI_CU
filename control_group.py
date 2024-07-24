@@ -119,7 +119,7 @@ def save_to_db(data):
     # Connect to MongoDB (Replace <username>, <password>, and <cluster-url> with your MongoDB credentials)
     client = MongoClient("mongodb+srv://eunclar:RLAskawn123!@mongocluster.g3klhii.mongodb.net/")
     db = client['user_data']
-    collection = db['video_data']
+    collection = db['control_data']
     
     # Insert the data into the collection
     collection.insert_one(data)
@@ -163,9 +163,15 @@ def init():
         frame = imutils.resize(frame, width=400)
         grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 
-        # Find all the faces and features in the current frame of video
         face_locations = face_recognition.face_locations(frame)
-        face_landmarks = face_recognition.face_landmarks(frame)
+
+        # for detecting 1 face at a time
+        if face_locations:
+            one_face_location = face_locations[0]
+            face_landmarks_list = face_recognition.face_landmarks(frame, [one_face_location])
+            one_face_landmark = face_landmarks_list[0] if face_landmarks_list else None
+
+
 
         # if video is playing right now
         if not vid.get_paused():
@@ -182,12 +188,12 @@ def init():
                 face_gone = False
                 gone_timestamp = -1
 
-                for landmarks in face_landmarks:
+                if one_face_landmark:
 
                     # commented it out as we don't actually have to draw anything lol
-                    draw_landmarks(frame, landmarks)
+                    draw_landmarks(frame, one_face_landmark)
 
-                    ear = detect_blink(landmarks)
+                    ear = detect_blink(one_face_landmark)
                     
                     # eyes closed
                     if ear < 0.25:  # Assuming 0.2 as the threshold for blink detection
