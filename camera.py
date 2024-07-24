@@ -24,7 +24,7 @@ except ModuleNotFoundError:
 pygame.init()
 
 # global vid
-vid = Video("Procrastination.mp4")
+vid = Video("ani.mp4")
 global gone_timestamp, closed_timestamp, face_gone, face_closed, gone_alarm_duration, closed_alarm_duration, \
       gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp
 
