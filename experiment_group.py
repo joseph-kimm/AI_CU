@@ -5,6 +5,7 @@ import time
 from scipy.spatial import distance
 import pygame
 from pyvidplayer2 import Video
+from moviepy.editor import VideoFileClip
 import platform
 from tkinter import messagebox
 import imutils
@@ -83,10 +84,10 @@ def show_alert(type, blink):
         root.withdraw()  # Hide the tkinter window
 
         if type == 'face':
-            winsound.Beep(3000, 200) 
+            winsound.Beep(1500, 300) 
             tk.messagebox.showwarning("경고!", "5초 이상 얼굴이 감지되지 않았습니다.")
         elif type == 'eye':
-            winsound.Beep(3000, 200) 
+            winsound.Beep(1500, 300) 
             tk.messagebox.showwarning("경고!", "5초 이상 눈을 감고 있었습니다.")
 
         root.destroy()
@@ -190,8 +191,10 @@ def init():
     initial_values()
 
     # setting display for the educatinal video
-    win = pygame.display.set_mode(vid.current_size)
+    window_size=(1100,900)
+    win = pygame.display.set_mode(window_size)
     pygame.display.set_caption(vid.name)
+
 
     start_time = time.time()
 
@@ -212,7 +215,6 @@ def init():
 
         # Capture frame-by-frame
         frame = cap.read()
-
         # reducing size and changing into grayscale for efficiency
         frame = imutils.resize(frame, width=400)
         grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
@@ -235,7 +237,7 @@ def init():
 
             curr_time = time.time()
             if curr_time - start_time - pause_duration - gone_alarm_duration - closed_alarm_duration >= duration_limit:
-                print(vid.get_pos())
+                # print(vid.get_pos())
                 vid.stop()
 
             # if face detected 
@@ -248,7 +250,7 @@ def init():
                 if one_face_landmark:
 
                     # commented it out as we don't actually have to draw anything lol
-                    draw_landmarks(frame, one_face_landmark)
+                    # draw_landmarks(frame, one_face_landmark)
 
                     ear = detect_blink(one_face_landmark)
                     
@@ -291,7 +293,8 @@ def init():
             reset_counter()
 
         # Display the resulting image
-        cv2.imshow('Video', frame)
+        # cv2.imshow('Video', frame)
+        
 
         # only draw new frames, and only update the screen if something is drawn
         if vid.draw(win, (0, 0), force_draw=False):
@@ -306,7 +309,7 @@ def init():
     pygame.quit()
 
     data = {
-        "num": assigned_num,
+        "usernum": assigned_num,
         "closed_alarm_count": closed_alarm_count,
         "closed_alarm_duration": closed_alarm_duration,
         "gone_alarm_count": gone_alarm_count,
@@ -319,7 +322,7 @@ if __name__ == "__main__":
     pygame.init()
 
     # global vid
-    vid = Video("txt.mp4")
+    vid = Video("resource/2016vid.mp4")
     global gone_timestamp, closed_timestamp, face_gone, face_closed, \
     gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp, assigned_num
 
