@@ -1,6 +1,17 @@
 import webbrowser
 import pygame
 
+def check_sequence(key_sequence, target_sequence):
+    """Checks if the key sequence matches the target sequence ('exit')."""
+    # Keep only the last len(target_sequence) keys
+    if len(key_sequence) > len(target_sequence):
+        key_sequence.pop(0)
+    
+    # Check if the sequence matches "exit"
+    if key_sequence == target_sequence:
+        return True
+    return False
+
 # displaying the links to survey and quiz
 def display_link():
 
@@ -79,13 +90,22 @@ def display_link():
     
     running = True
 
+     # entering specific keys in order to close the final screen (on developer end)
+    key_sequence = []
+    target_sequence = ['c', 'l', 'o', 's', 'e']
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pass
+            elif event.type == pygame.KEYDOWN:
+                key = pygame.key.name(event.key)
+                key_sequence.append(key)
+                
+                if check_sequence(key_sequence, target_sequence):
+                    running = False
         
         screen.fill(WHITE)
-
         screen.blit(yonsei, (yonsei_x, 25))
 
         y_position = 50 + yonsei.get_height()
@@ -108,13 +128,13 @@ def display_link():
             
             # Check if the hyperlink is hovered or clicked
             if check_hyperlink(text_rect, link):
-                # Change color to red when hovered
+                # Change color to light blue when hovered
                 text_rect = render_text(text, LIGHT_BLUE, (50, y_position))
             
             y_position += (2 * font.get_height())
 
         pygame.display.flip()
-
+        
     pygame.quit()
 
 if __name__ == "__main__":
