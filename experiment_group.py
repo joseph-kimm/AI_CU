@@ -319,7 +319,7 @@ if __name__ == "__main__":
     pygame.init()
 
     # global vid
-    vid = Video("txt.mp4")
+    vid = Video("Procrastination.mp4")
     global gone_timestamp, closed_timestamp, face_gone, face_closed, \
     gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp, assigned_num
 
