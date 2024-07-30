@@ -250,7 +250,7 @@ def init():
                 if one_face_landmark:
 
                     # commented it out as we don't actually have to draw anything lol
-                    # draw_landmarks(frame, one_face_landmark)
+                    draw_landmarks(frame, one_face_landmark)
 
                     ear = detect_blink(one_face_landmark)
                     
@@ -293,7 +293,7 @@ def init():
             reset_counter()
 
         # Display the resulting image
-        # cv2.imshow('Video', frame)
+        cv2.imshow('Video', frame)
         
 
         # only draw new frames, and only update the screen if something is drawn

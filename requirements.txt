@@ -1,8 +1,8 @@
 tk
-opencv-python
-face_recognition
 pygame
 pyvidplayer2
 imutils
 scipy
 pymongo
+face-recognition
+opencv-python

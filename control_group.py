@@ -14,13 +14,6 @@ import WebCamVideo
 import DisplayLink
 import DisplayIntro
 
-# Try importing AppKit for macOS functionality (if available)
-try:
-  if platform.system() == "Darwin":  # Check for macOS using platform module
-    from AppKit import NSApplication, NSAlert, NSWindow
-except ModuleNotFoundError:
-  pass
-
 def initial_values():
     global gone_timestamp, closed_timestamp, face_gone, face_closed, \
         gone_alarm_count, closed_alarm_count, pause_duration, duration_limit
@@ -124,6 +117,35 @@ def save_to_db(data):
     # Insert the data into the collection
     collection.insert_one(data)
 
+def fit_vid():
+    # find the size of the computer screen
+    computer = pygame.display.Info()
+    screen_width, screen_height = computer.current_w, computer.current_h
+
+    # adjust the size of the video accordingly
+    video_width, video_height = vid.original_size
+    vid.change_resolution(int((screen_width/video_width) * video_height))
+
+    # setting display for the educational video + space for progress bar
+    video_width, video_height = vid.current_size
+    win = pygame.display.set_mode((video_width, video_height+10))
+    pygame.display.set_caption(vid.name)
+
+    return win
+
+def display_progress_bar(win):
+    bar_width = vid.current_size[0]
+    bar_height = 10
+    bar_x = 0
+    bar_y = vid.current_size[1]
+    progress = vid.get_pos() / vid.duration
+    progress_width = progress * bar_width
+    
+    # Draw background bar
+    pygame.draw.rect(win, (50, 50, 50), (bar_x, bar_y, bar_width, bar_height))
+    # Draw progress bar
+    pygame.draw.rect(win, (0, 128, 255), (bar_x, bar_y, progress_width, bar_height))
+
 def init():
     # getting face image from camera
     cap = WebCamVideo.WebcamVideoStream(src=0).start()
@@ -134,9 +156,7 @@ def init():
     # reset all the counters that we have
     initial_values()
 
-    # setting display for the educatinal video
-    win = pygame.display.set_mode(vid.current_size)
-    pygame.display.set_caption(vid.name)
+    win = fit_vid()
 
     # getting the the timestamp of when vidoe started
     start_time = time.time()
@@ -236,6 +256,9 @@ def init():
         # Display the resulting image
         cv2.imshow('Video', frame)
 
+        # Update the progress bar
+        display_progress_bar(win)
+
         # only draw new frames, and only update the screen if something is drawn
         if vid.draw(win, (0, 0), force_draw=False):
             pygame.display.update()
@@ -260,12 +283,12 @@ if __name__ == "__main__":
     pygame.init()
 
     # global vid
-    vid = Video("Procrastination.mp4")
+    vid = Video("resource/2016vid.mp4")
     global gone_timestamp, closed_timestamp, face_gone, face_closed, \
     gone_alarm_count, closed_alarm_count, pause_duration, duration_limit, paused_timestamp, resume_timestamp, assigned_num
 
     assigned_num = input('Enter user number: ')
 
-    if DisplayIntro.display_intro():
-        init()
-        DisplayLink.display_link()
+    #if DisplayIntro.display_intro():
+    init()
+        #DisplayLink.display_link()
