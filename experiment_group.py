@@ -173,12 +173,42 @@ def video_control(key):
 
 def save_to_db(data):
     # Connect to MongoDB (Replace <username>, <password>, and <cluster-url> with your MongoDB credentials)
-    client = MongoClient("mongodb+srv://eunclar:RLAskawn123!@mongocluster.g3klhii.mongodb.net/")
+    client = MongoClient("mongodb+srv://aiedLAB:aiedAICU606!@aied.ysvwwtj.mongodb.net/")
     db = client['user_data']
     collection = db['experiment_data']
     
     # Insert the data into the collection
     collection.insert_one(data)
+
+def fit_vid():
+    # find the size of the computer screen
+    pygame.display.set_mode((0, 0), pygame.NOFRAME)
+    computer = pygame.display.Info()
+    screen_width, screen_height = computer.current_w, computer.current_h
+
+    # adjust the size of the video accordingly
+    video_width, video_height = vid.original_size
+    vid.change_resolution(int((screen_width/video_width) * video_height))
+
+    # setting display for the educational video + space for progress bar
+    video_width, video_height = vid.current_size
+    win = pygame.display.set_mode((video_width, video_height+10))
+    pygame.display.set_caption(vid.name)
+
+    return win
+
+def display_progress_bar(win):
+    bar_width = vid.current_size[0]
+    bar_height = 10
+    bar_x = 0
+    bar_y = vid.current_size[1]
+    progress = vid.get_pos() / vid.duration
+    progress_width = progress * bar_width
+    
+    # Draw background bar
+    pygame.draw.rect(win, (50, 50, 50), (bar_x, bar_y, bar_width, bar_height))
+    # Draw progress bar
+    pygame.draw.rect(win, (0, 128, 255), (bar_x, bar_y, progress_width, bar_height))
 
 def init():
     # getting face image from camera
@@ -191,10 +221,7 @@ def init():
     initial_values()
 
     # setting display for the educatinal video
-    window_size=(1100,900)
-    win = pygame.display.set_mode(window_size)
-    pygame.display.set_caption(vid.name)
-
+    win = fit_vid()
 
     start_time = time.time()
 
@@ -294,8 +321,10 @@ def init():
 
         # Display the resulting image
         cv2.imshow('Video', frame)
-        
 
+        # Update the progress bar
+        display_progress_bar(win)
+        
         # only draw new frames, and only update the screen if something is drawn
         if vid.draw(win, (0, 0), force_draw=False):
             pygame.display.update()

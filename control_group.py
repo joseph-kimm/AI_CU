@@ -110,7 +110,7 @@ def video_control(key):
 
 def save_to_db(data):
     # Connect to MongoDB (Replace <username>, <password>, and <cluster-url> with your MongoDB credentials)
-    client = MongoClient("mongodb+srv://eunclar:RLAskawn123!@mongocluster.g3klhii.mongodb.net/")
+    client = MongoClient("mongodb+srv://aiedLAB:aiedAICU606!@aied.ysvwwtj.mongodb.net/")
     db = client['user_data']
     collection = db['control_data']
     
@@ -119,6 +119,7 @@ def save_to_db(data):
 
 def fit_vid():
     # find the size of the computer screen
+    pygame.display.set_mode((0, 0), pygame.NOFRAME)
     computer = pygame.display.Info()
     screen_width, screen_height = computer.current_w, computer.current_h
 
@@ -289,6 +290,6 @@ if __name__ == "__main__":
 
     assigned_num = input('Enter user number: ')
 
-    #if DisplayIntro.display_intro():
-    init()
-        #DisplayLink.display_link()
+    if DisplayIntro.display_intro():
+        init()
+        DisplayLink.display_link()
