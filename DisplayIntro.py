@@ -52,10 +52,10 @@ def display_intro():
     font = pygame.font.Font('resource/Nanum/NanumGothicCoding-Regular.ttf', 20)
 
     # Display instructions
-    instructions_text_1 = "귀하는 60분 정도 분량의 동영상 1개를 보게 될 것입니다. 해당 동영상은 장애인식개선교육에 대한 것입니다. 동영상을 본 후 연구자가 주관하는 퀴즈와 설문 조사에 참여하도록 요청받을 것입니다."
-    instructions_text_2 = "실험 설계 상 모든 실험참가자의 학습시간은 65분으로 고정 되있습니다. 영상재생 시간이 65분이 지나면 (영상 중지한 시간은 포함 안함) 자동으로 영상이 중단될 것입니다."
-    instructions_text_3 = "영상을 중지하려면 스패이스바를, 15초 돌아갈려면 왼쪽방향키를 눌러주세요."
-    instructions_text_4 = "동영상을 시청하실려면 아래의 시작 버튼을 클릭해주세요."
+    instructions_text_1 = "귀하는 60분 정도 분량의 동영상 1개를 보게 될 것입니다. 해당 동영상은 장애인식개선교육에 대한 것입니다. 동영상을 본 후 귀하는 퀴즈와 설문 조사에 참여하도록 요청받을 것입니다."
+    instructions_text_2 = "실험 설계상 모든 실험참가자의 학습시간은 65분으로 고정 되있습니다. 영상재생 시간이 65분이 지나면 자동으로 영상이 중단될 것입니다. 단, 영상이 중지된 시간은 포함되지 않습니다."
+    instructions_text_3 = "영상을 중지하려면 스페이스 바를, 15초 이전으로 돌아갈려면 왼쪽방향키를 눌러주세요."
+    instructions_text_4 = "동영상을 시청하시려면 아래의 시작 버튼을 눌러주세요."
 
     text_lines = []
     text_lines.append(wrap_text(instructions_text_1, font, width-50))
