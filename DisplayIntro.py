@@ -41,15 +41,16 @@ def display_intro():
     BLUE = (0, 0, 255)
     LIGHT_BLUE = (0, 100, 255)
 
-    width = 800
-    height = 400
+    width = 1200
+    height = 600
 
-
-    # Set up the display
-    screen = pygame.display.set_mode((width, height), flags=pygame.NOFRAME)
+    # Set up the display to be full screen
+    computer = pygame.display.Info()
+    screen_width, screen_height = computer.current_w, computer.current_h
+    screen = pygame.display.set_mode((screen_width, screen_height), flags=pygame.NOFRAME)
     pygame.display.set_caption("Start Display")
 
-    font = pygame.font.Font('resource/Nanum/NanumGothicCoding-Regular.ttf', 20)
+    font = pygame.font.Font('resource/Nanum/NanumGothicCoding-Regular.ttf', 30)
 
     # Display instructions
     instructions_text_1 = "귀하는 60분 정도 분량의 동영상 1개를 보게 될 것입니다. 해당 동영상은 장애인식개선교육에 대한 것입니다. 동영상을 본 후 귀하는 퀴즈와 설문 조사에 참여하도록 요청받을 것입니다."
@@ -58,17 +59,17 @@ def display_intro():
     instructions_text_4 = "동영상을 시청하시려면 아래의 시작 버튼을 눌러주세요."
 
     text_lines = []
-    text_lines.append(wrap_text(instructions_text_1, font, width-50))
-    text_lines.append(wrap_text(instructions_text_2, font, width-50))
-    text_lines.append(wrap_text(instructions_text_3, font, width-50))
-    text_lines.append(wrap_text(instructions_text_4, font, width-50))
+    text_lines.append(wrap_text(instructions_text_1, font, width))
+    text_lines.append(wrap_text(instructions_text_2, font, width))
+    text_lines.append(wrap_text(instructions_text_3, font, width))
+    text_lines.append(wrap_text(instructions_text_4, font, width))
     
     button_text = "시작"
-    button_x = width/2 - font.size(button_text)[0]/2
+    button_x = screen_width/2 - font.size(button_text)[0]/2
 
     yonsei = pygame.image.load('resource/image/Yonsei_Uni_Logo.png')
-    yonsei = pygame.transform.smoothscale(yonsei, (50,50))
-    yonsei_x = width/2 - yonsei.get_width()/2
+    yonsei = pygame.transform.smoothscale(yonsei, (100,100))
+    yonsei_x = screen_width/2 - yonsei.get_width()/2
 
     running = True
 
@@ -85,9 +86,9 @@ def display_intro():
         # Fill the screen with white background
         screen.fill(WHITE)
 
-        screen.blit(yonsei, (yonsei_x, 25))
+        screen.blit(yonsei, (yonsei_x, (screen_height/2)-height/2))
 
-        y_position = 50 + yonsei.get_height()
+        y_position = (screen_height/2)-height/2 + yonsei.get_height() + 50
 
         # Putting the texts to fit the display
         for text_line in text_lines:
@@ -95,7 +96,7 @@ def display_intro():
             # drawing each line
             for i, line in enumerate(text_line):
                 line_surface = font.render(line, True, BLACK)
-                screen.blit(line_surface, (30, y_position))
+                screen.blit(line_surface, ((screen_width/2)-width/2, y_position))
 
                 y_position += font.get_height()+1
 

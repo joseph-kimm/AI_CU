@@ -71,22 +71,24 @@ def display_link():
     width = 800
     height = 400
 
-    # Set up the display
-    screen = pygame.display.set_mode((width, height), flags=pygame.NOFRAME)
+    # Set up the display to be full screen
+    computer = pygame.display.Info()
+    screen_width, screen_height = computer.current_w, computer.current_h
+    screen = pygame.display.set_mode((screen_width, screen_height), flags=pygame.NOFRAME)
     pygame.display.set_caption("Display Quiz and Survey")
 
     font = pygame.font.Font('resource/Nanum/NanumGothicCoding-Regular.ttf', 32)
 
     intro = "영상을 시청해주셔서 감사합니다. 마지막으로 퀴즈와 설문지를 작성해주세요."
     
-    intro_lines = wrap_text(intro, font, width-50)
+    intro_lines = wrap_text(intro, font, width)
 
     links = [("퀴즈", "https://www.google.com"),
              ("설문지", "https://www.youtube.com")]
     
     yonsei = pygame.image.load('resource/image/Yonsei_Uni_Logo.png')
-    yonsei = pygame.transform.smoothscale(yonsei, (50,50))
-    yonsei_x = width/2 - yonsei.get_width()/2
+    yonsei = pygame.transform.smoothscale(yonsei, (100,100))
+    yonsei_x = screen_width//2 - yonsei.get_width()/2
     
     running = True
 
@@ -106,13 +108,14 @@ def display_link():
                     running = False
         
         screen.fill(WHITE)
-        screen.blit(yonsei, (yonsei_x, 25))
 
-        y_position = 50 + yonsei.get_height()
+        screen.blit(yonsei, (yonsei_x, (screen_height/2)-height/2))
+
+        y_position = (screen_height/2)-height/2 + yonsei.get_height() + 50
 
         for i, line in enumerate(intro_lines):
             line_surface = font.render(line, True, BLACK)
-            screen.blit(line_surface, (50, y_position))
+            screen.blit(line_surface, ((screen_width/2)-width/2, y_position))
 
             y_position += font.get_height()+2
         
@@ -124,12 +127,12 @@ def display_link():
             color = BLUE
             
             # Render the text and get its rectangle
-            text_rect = render_text(text, color, (50, y_position))
+            text_rect = render_text(text, color, ((screen_width/2)-width/2, y_position))
             
             # Check if the hyperlink is hovered or clicked
             if check_hyperlink(text_rect, link):
                 # Change color to light blue when hovered
-                text_rect = render_text(text, LIGHT_BLUE, (50, y_position))
+                text_rect = render_text(text, LIGHT_BLUE, ((screen_width/2)-width/2, y_position))
             
             y_position += (2 * font.get_height())
 

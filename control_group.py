@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 import cv2
 import face_recognition
 import time
@@ -281,6 +282,7 @@ def init():
     save_to_db(data)
 
 if __name__ == "__main__":
+    os.environ['SDL_VIDEO_WINDOW_POS'] = "0,0"
     pygame.init()
 
     # global vid
