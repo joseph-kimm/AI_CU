@@ -4,8 +4,8 @@ AI_CU is a program that helps students pay attention to video lectures by detect
 
 ### Requirements before running the program
 
-- Need to have Python v3.11
-- Install necessary libraries (`pip install -r requirements.txt`)
+#### For Windows
+- run `install.bat` in command prompt
 
 
 
