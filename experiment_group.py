@@ -5,7 +5,6 @@ import time
 from scipy.spatial import distance
 import pygame
 from pyvidplayer2 import Video
-from moviepy.editor import VideoFileClip
 import platform
 from tkinter import messagebox
 import imutils
@@ -242,9 +241,10 @@ def init():
 
         # Capture frame-by-frame
         frame = cap.read()
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         # reducing size and changing into grayscale for efficiency
         frame = imutils.resize(frame, width=400)
-        grayscale_frame = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
+        
 
         # Find all the faces and features in the current frame of video
         face_locations = face_recognition.face_locations(frame)
