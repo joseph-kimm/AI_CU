@@ -10,13 +10,13 @@ REM Create a virtual environment
 py -m venv ai_cu_env
 
 REM Activate the virtual environment
-ai_cu_env\Scripts\activate
+call ai_cu_env\Scripts\activate
 
 REM Upgrade pip
 py -m pip install --upgrade pip
 
 REM Download Dlib
-curl -L -o dlib-19.24.1-cp311-cp311-win_amd64.whl https://github.com/z-mahmud22/Dlib_Windows_Python3.x/blob/main/dlib-19.24.1-cp311-cp311-win_amd64.whl
+curl -L -o dlib-19.24.1-cp311-cp311-win_amd64.whl https://github.com/z-mahmud22/Dlib_Windows_Python3.x/raw/main/dlib-19.24.1-cp311-cp311-win_amd64.whl
 
 REM Install Dlib
 pip install dlib-19.24.1-cp311-cp311-win_amd64.whl
