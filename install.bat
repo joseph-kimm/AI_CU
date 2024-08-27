@@ -26,7 +26,7 @@ pip install -r requirements.txt
 REM Install FFMPEG
 curl -L -o ffmpeg-release-essentials.zip https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip
 tar -xf ffmpeg-release-essentials.zip
-set PATH=%PATH%;C:\Users\user\Downloads\AI_CU-main\AI_CU-main\ffmpeg-7.0.2-essentials_build\bin
+setx PATH=%PATH%;C:\Users\user\Downloads\AI_CU-main\AI_CU-main\ffmpeg-7.0.2-essentials_build\bin
 
 REM Cleanup
 del python-3.11.9-amd64.exe
