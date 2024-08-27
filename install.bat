@@ -1,4 +1,3 @@
-@echo off
 
 REM Download Python installer
 curl -o python-3.11.9-amd64.exe https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe
