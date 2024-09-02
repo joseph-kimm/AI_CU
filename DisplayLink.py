@@ -83,8 +83,7 @@ def display_link():
     
     intro_lines = wrap_text(intro, font, width)
 
-    links = [("퀴즈", "https://www.google.com"),
-             ("설문지", "https://www.youtube.com")]
+    links = [("퀴즈", "https://www.google.com"), ("설문지", "https://www.youtube.com")]
     
     yonsei = pygame.image.load('resource/image/Yonsei_Uni_Logo.png')
     yonsei = pygame.transform.smoothscale(yonsei, (100,100))
