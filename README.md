@@ -11,5 +11,12 @@ AI_CU is a program that helps students pay attention to video lectures by detect
 - run `ai_cu_env\Scripts\activate` to get inside the virtual environment.
 - run either `py control_group.py` or `py experimental_group.py` depending on what group the user is assgined to.
 
+### Description of Python Files
+- `experiment_group.py`: program to run for experiment group
+- `control_group.py`: program to run for control group
+- `DisplayIntro.py`: intro screen that gives a brief description of the experiment/program
+- `DisplayLink.py`: end screen that provides link to quiz and survey
+- `WebCamVideo.py`: program that receives camera input concurrently using threading
+
 
 
