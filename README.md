@@ -5,7 +5,7 @@ AI_CU is a program that helps students pay attention to video lectures by detect
 ### Requirements before running the program
 
 #### For Windows
-- download the entire github folder and unzip the folder.
+- download the entire github folder and unzip the folder. Make sure that the folder is unzipped insides the Downloads folder and not anywhere else.
 - run `install.bat` file in the folder. This will install all the dependencies necessary to run the program.
 - make sure that both the file names are `AI_CU_main` and not anything else. Otherwise, an error relating to file paths may occur.
 - open command prompt and go to the `AI_CU_main` folder using `cd`.
