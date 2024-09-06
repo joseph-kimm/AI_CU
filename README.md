@@ -7,6 +7,7 @@ AI_CU is a program that helps students pay attention to video lectures by detect
 #### For Windows
 - download the entire github folder and unzip the folder.
 - run `install.bat` file in the folder. This will install all the dependencies necessary to run the program.
+- make sure that both the file names are `AI_CU_main` and not anything else. Otherwise, an error relating to file paths may occur.
 - open command prompt and go to the `AI_CU_main` folder using `cd`.
 - run `ai_cu_env\Scripts\activate` to get inside the virtual environment.
 - run either `py control_group.py` or `py experimental_group.py` depending on what group the user is assgined to.
