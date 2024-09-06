@@ -1,7 +1,7 @@
 numpy==1.26.4
 tk
 pygame
-pyvidplayer2
+pyvidplayer2=0.9.18
 imutils
 scipy
 pymongo
